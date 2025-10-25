@@ -1,3 +1,23 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dewolf"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "capstone",
+    "networkx != 2.8.4",
+    "pydot",
+    "pygments",
+    "z3-solver>=4.12.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["decompiler*"]
+
 [tool.black]
 line-length = 140
 target-version = ['py310']
