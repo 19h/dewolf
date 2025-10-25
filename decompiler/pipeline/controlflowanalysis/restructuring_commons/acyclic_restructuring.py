@@ -40,13 +40,24 @@ class AcyclicRegionRestructurer:
     def restructure(self):
         """Restructure the acyclic transition graph."""
         acyclic_region_finder: AcyclicRegionFinder = AcyclicRegionFinderFactory.create(Strategy.improved_dream)(self.t_cfg)
+        max_iterations = len(self.t_cfg) * 10  # Prevent infinite loops
+        iterations = 0
         while len(self.t_cfg) > 1:
+            if iterations >= max_iterations:
+                raise RuntimeError(
+                    f"Restructuring exceeded maximum iterations ({max_iterations}). "
+                    f"Graph still has {len(self.t_cfg)} nodes. This likely indicates a bug or unsupported control flow pattern."
+                )
+            iterations += 1
             for node in self.t_cfg.iter_postorder():
                 if restructurable_region := acyclic_region_finder.find(node):
                     self._construct_ast_for_region(restructurable_region, node)
                     break
             else:
-                raise RuntimeError(f"We are not able to restructure the remaining graph which has still {len(self.t_cfg)} nodes.")
+                raise RuntimeError(
+                    f"Unable to restructure the remaining graph which has {len(self.t_cfg)} nodes. "
+                    f"No restructurable regions found. This may indicate complex control flow that cannot be reduced to structured code."
+                )
 
     def _construct_ast_for_region(self, region: Set[TransitionBlock], head: TransitionBlock) -> None:
         """

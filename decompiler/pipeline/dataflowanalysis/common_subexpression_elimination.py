@@ -251,7 +251,11 @@ class DefinitionGenerator:
         usage_blocks: Set[BasicBlock] = {instruction.block for instruction in self._usages[expression]}
         candidate: BasicBlock = next(iter(usage_blocks))
         while not self._is_common_dominator(candidate, usage_blocks) or self._is_invalid_dominator(candidate, expression):
-            candidate = self._dominator_tree.get_predecessors(candidate)[0]
+            predecessors = self._dominator_tree.get_predecessors(candidate)
+            if not predecessors:
+                # No dominating block found - this can happen with unusual control flow
+                raise StopIteration(f"No common dominator found for expression {expression}")
+            candidate = predecessors[0]
         return candidate, self._find_insertion_index(candidate, self._usages[expression].keys())
 
     def _is_common_dominator(self, candidate: BasicBlock, basic_blocks: Set[BasicBlock]) -> bool:

@@ -84,7 +84,11 @@ class PatternIndependentRestructuring(PipelineStage):
                 self.t_cfg.refresh_edge_properties()
                 loop_heads = self._get_loop_heads()
 
-        AcyclicRegionRestructurer(self.t_cfg, self.asforest, self.options).restructure()
+        try:
+            AcyclicRegionRestructurer(self.t_cfg, self.asforest, self.options).restructure()
+        except RuntimeError as e:
+            logging.error(f"Failed to restructure acyclic regions: {e}")
+            raise
         self._fulfill_switch_options()
 
     def _restructure_empty_cfg(self):

@@ -2,7 +2,7 @@ import logging
 
 import binaryninja.function
 from binaryninja import BinaryView
-from compiler_idioms.disassembly.smda_disassembly import SMDADisassembly
+from compiler_idioms.disassembly.capstone_disassembly import CapstoneDisassembly
 from compiler_idioms.matcher import Matcher
 from decompiler.util.options import Options
 
@@ -15,7 +15,7 @@ class CompilerIdiomsTagging:
 
     def __init__(self, binary_view: BinaryView):
         self._bv = binary_view
-        self._disassembly = SMDADisassembly(self._bv.file.filename)
+        self._disassembly = CapstoneDisassembly(self._bv.file.filename)
         self._matcher = Matcher()
 
     def run(self, function: binaryninja.function.Function, options: Options):
@@ -29,7 +29,7 @@ class CompilerIdiomsTagging:
         if not enabled:
             return
         try:
-            instructions = self._disassembly.get_smda_function_at(function.start)
+            instructions = self._disassembly.get_function_at(function.start)
             matches = self._matcher._match_single_function(instructions)
         except Exception as e:
             if debug_submodules:

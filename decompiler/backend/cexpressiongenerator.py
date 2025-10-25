@@ -242,6 +242,11 @@ class CExpressionGenerator(DataflowObjectVisitorInterface):
                     val = "".join("\\x{:02x}".format(x) for x in expr.value)
                     return f'"{val}"' if len(val) <= MAX_GLOBAL_INIT_LENGTH else f'"{val[:MAX_GLOBAL_INIT_LENGTH]}..."'
         if isinstance(expr.type, ArrayType):
+            # Handle case where expr.value might be an int instead of iterable
+            if not hasattr(expr.value, '__iter__') or isinstance(expr.value, (int, str)):
+                # If value is not iterable (or is a string/int), just format it directly
+                return str(expr.value)
+            
             match expr.type.type:
                 case CustomType(text="wchar16") | CustomType(text="wchar32"):
                     val = "".join(expr.value).translate(self.ESCAPE_TABLE)
